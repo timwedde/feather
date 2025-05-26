@@ -24,7 +24,7 @@ impl Response {
     /// ```rust,ignore
     /// res.status(200).send_text("eyo");
     /// ```
-    /// The StatusCode is a 3-digit integer that indicates the result of the request.    
+    /// The StatusCode is a 3-digit integer that indicates the result of the request.
     pub fn set_status(&mut self, status: u16) -> &mut Response {
         self.status = StatusCode::from_u16(status).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
         self
@@ -55,7 +55,9 @@ impl Response {
         response.push_str("\r\n");
 
         if let Some(ref body) = self.body {
-            response.push_str(&String::from_utf8_lossy(body));
+            let v = body.to_vec();
+            let s = unsafe { String::from_utf8_unchecked(v) };
+            response.push_str(&s);
         }
         response
     }
@@ -124,7 +126,7 @@ impl Response {
                 .unwrap(),
         );
     }
-    /// Takes a Serializeable object and sends it as json.  
+    /// Takes a Serializeable object and sends it as json.
     pub fn send_json<T: Serialize>(&mut self, data: T) {
         match serde_json::to_string(&data) {
             Ok(json) => {
@@ -165,7 +167,7 @@ impl Response {
         }
     }
     /// Take a [File] Struct and sends it as a file
-    pub fn send_file(&mut self,mut file: File){
+    pub fn send_file(&mut self, mut file: File) {
         let mut buffer = Vec::new();
         match file.read_to_end(&mut buffer) {
             Ok(_) => {
@@ -187,7 +189,7 @@ impl Response {
                 self.status = StatusCode::INTERNAL_SERVER_ERROR;
                 self.body = Some(Bytes::from("Internal Server Error"));
             }
-        } 
+        }
     }
 }
 
